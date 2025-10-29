@@ -1,7 +1,7 @@
--- MySQL 8.x schema (InnoDB + utf8mb4)
+-- Initial database setup for Convo
 
--- Users Table
-CREATE TABLE `users` (
+-- User Table
+CREATE TABLE `user` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
     `username` VARCHAR(50) NOT NULL,
     `password` VARCHAR(255) NOT NULL,
@@ -10,12 +10,12 @@ CREATE TABLE `users` (
     `last_seen` DATETIME(3) NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_users_username` (`username`),
-    UNIQUE KEY `uk_users_email` (`email`)
+    UNIQUE KEY `uk_user_username` (`username`),
+    UNIQUE KEY `uk_user_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Chat Rooms Table
-CREATE TABLE `chat_rooms` (
+-- Chat Room Table
+CREATE TABLE `chat_room` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(100) NOT NULL,
     `description` TEXT NULL,
@@ -23,14 +23,14 @@ CREATE TABLE `chat_rooms` (
     `created_by` BIGINT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
-    KEY `idx_chat_rooms_created_by` (`created_by`),
-    CONSTRAINT `fk_chat_rooms_created_by`
-        FOREIGN KEY (`created_by`) REFERENCES `users` (`id`)
+    KEY `idx_chat_room_created_by` (`created_by`),
+    CONSTRAINT `fk_chat_room_created_by`
+        FOREIGN KEY (`created_by`) REFERENCES `user` (`id`)
         ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Messages Table
-CREATE TABLE `messages` (
+-- Message Table
+CREATE TABLE `message` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
     `sender_id` BIGINT NOT NULL,
     `chat_room_id` BIGINT NOT NULL,
@@ -40,40 +40,40 @@ CREATE TABLE `messages` (
     `edited` BOOLEAN DEFAULT FALSE,
     `edited_at` DATETIME(3) NULL,
     PRIMARY KEY (`id`),
-    KEY `idx_messages_chat_room_timestamp` (`chat_room_id`, `timestamp`),
-    KEY `idx_messages_sender` (`sender_id`),
-    CONSTRAINT `fk_messages_sender`
-        FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`)
+    KEY `idx_message_chat_room_timestamp` (`chat_room_id`, `timestamp`),
+    KEY `idx_message_sender` (`sender_id`),
+    CONSTRAINT `fk_message_sender`
+        FOREIGN KEY (`sender_id`) REFERENCES `user` (`id`)
         ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT `fk_messages_chat_room`
-        FOREIGN KEY (`chat_room_id`) REFERENCES `chat_rooms` (`id`)
+    CONSTRAINT `fk_message_chat_room`
+        FOREIGN KEY (`chat_room_id`) REFERENCES `chat_room` (`id`)
         ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- User Chat Rooms Junction Table
-CREATE TABLE `user_chat_rooms` (
+-- User Chat Room Junction Table
+CREATE TABLE `user_chat_room` (
     `user_id` BIGINT NOT NULL,
     `chat_room_id` BIGINT NOT NULL,
     PRIMARY KEY (`user_id`, `chat_room_id`),
-    KEY `idx_user_chat_rooms_chat_room` (`chat_room_id`),
+    KEY `idx_user_chat_room_chat_room` (`chat_room_id`),
     CONSTRAINT `fk_ucr_user`
-        FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+        FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
         ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT `fk_ucr_chat_room`
-        FOREIGN KEY (`chat_room_id`) REFERENCES `chat_rooms` (`id`)
+        FOREIGN KEY (`chat_room_id`) REFERENCES `chat_room` (`id`)
         ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Message Readers Table
-CREATE TABLE `message_readers` (
+-- Message Reader Table
+CREATE TABLE `message_reader` (
     `message_id` BIGINT NOT NULL,
     `user_id` BIGINT NOT NULL,
     PRIMARY KEY (`message_id`, `user_id`),
-    KEY `idx_message_readers_user` (`user_id`),
-    CONSTRAINT `fk_msg_readers_message`
-        FOREIGN KEY (`message_id`) REFERENCES `messages` (`id`)
+    KEY `idx_message_reader_user` (`user_id`),
+    CONSTRAINT `fk_msg_reader_message`
+        FOREIGN KEY (`message_id`) REFERENCES `message` (`id`)
         ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT `fk_msg_readers_user`
-        FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+    CONSTRAINT `fk_msg_reader_user`
+        FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
         ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
