@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class ChatRoom {
     private String description;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "type")
     private RoomType roomType = RoomType.PUBLIC;
 
     @ManyToOne
@@ -35,7 +37,8 @@ public class ChatRoom {
     private User createdBy;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @CreationTimestamp // TODO: move to base entity ?
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
     private List<Message> messages = new ArrayList<>();

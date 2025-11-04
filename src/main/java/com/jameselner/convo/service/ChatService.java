@@ -99,7 +99,7 @@ public class ChatService {
         return new ChatRoomDTO(room);
     }
 
-    private ChatMessageDTO convertToDTO(Message message) {
+    private ChatMessageDTO convertToDTO(final Message message) {
         ChatMessageDTO dto = new ChatMessageDTO();
         dto.setId(message.getId());
         dto.setSenderUsername(message.getSender().getUsername());

@@ -1,0 +1,67 @@
+### AuthController requests
+
+@auth_username = user_{{$timestamp}}
+@auth_email = user-{{$timestamp}}@example.com
+@auth_password = P@ssw0rd!
+
+### @name register
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "{{auth_username}}",
+  "email": "{{auth_email}}",
+  "password": "{{auth_password}}"
+}
+
+> {%
+    client.test("register returns 2xx", function() {
+        client.assert(response.status >= 200 && response.status < 300, "Expected 2xx");
+    });
+
+    // Capture token
+    try {
+        const body = response.body || {};
+        if (body && body.token) {
+            client.global.set("token", String(body.token));
+        }
+    } catch (e) {}
+
+    const authz = response.headers["Authorization"] || response.headers["authorization"];
+    if (authz) {
+        // e.g. "Bearer eyJ..." -> store the token part
+        const parts = Array.isArray(authz) ? authz[0].split(" ") : String(authz).split(" ");
+        if (parts.length === 2) client.global.set("token", parts[1]);
+    }
+%}
+
+### @name loginWithUsername
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "{{auth_username}}",
+  "password": "{{auth_password}}"
+}
+
+> {%
+    // Expect success and capture token
+    client.test("loginWithUsername returns 2xx", function() {
+        client.assert(response.status >= 200 && response.status < 300, "Expected 2xx");
+    });
+
+    try {
+        const body = response.body || {};
+        if (body && body.token) {
+            client.global.set("token", String(body.token));
+        }
+    } catch (e) {}
+
+    const authz = response.headers["Authorization"] || response.headers["authorization"];
+    if (authz) {
+        const parts = Array.isArray(authz) ? authz[0].split(" ") : String(authz).split(" ");
+        if (parts.length === 2) client.global.set("token", parts[1]);
+    }
+%}
