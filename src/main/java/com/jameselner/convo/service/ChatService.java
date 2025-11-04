@@ -1,0 +1,115 @@
+package com.jameselner.convo.service;
+
+import com.jameselner.convo.dto.ChatMessageDTO;
+import com.jameselner.convo.dto.ChatRoomDTO;
+import com.jameselner.convo.model.ChatRoom;
+import com.jameselner.convo.model.Message;
+import com.jameselner.convo.model.User;
+import com.jameselner.convo.repository.ChatRoomRepository;
+import com.jameselner.convo.repository.MessageRepository;
+import com.jameselner.convo.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class ChatService {
+
+    private final ChatRoomRepository chatRoomRepository;
+    private final MessageRepository messageRepository;
+    private final UserRepository userRepository;
+
+    @Transactional
+    public Message saveMessage(final String username, final Long chatRoomId, final String content) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new RuntimeException("Chat room not found with ID: " + chatRoomId));
+
+        Message message = Message.builder()
+                .sender(user)
+                .chatRoom(chatRoom)
+                .content(content)
+                .timestamp(LocalDateTime.now())
+                .type(Message.MessageType.TEXT)
+                .build();
+
+        return messageRepository.save(message);
+    }
+
+    public Page<ChatMessageDTO> getChatRoomMessages(final Long chatRoomId, final int page, final int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("timestamp").descending());
+        Page<Message> messages = messageRepository.findByChatRoomIdOrderByTimestampDesc(
+                chatRoomId, pageable
+        );
+
+        return messages.map(this::convertToDTO);
+    }
+
+    public List<ChatMessageDTO> searchMessages(final Long chatRoomId, final String keyword) {
+        List<Message> messages = messageRepository.searchInChatRoom(chatRoomId, keyword);
+        return messages.stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    @Transactional
+    public void markMessageAsRead(final Long messageId, final Long userId) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("Message not found: " + messageId));
+
+        message.getReadByUserIds().add(userId);
+        messageRepository.save(message);
+    }
+
+    @Transactional
+    public ChatRoom createChatRoom(final String name, final String description, final String username) {
+        User creator = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+
+        ChatRoom chatRoom = ChatRoom.builder()
+                .name(name)
+                .description(description)
+                .createdBy(creator)
+                .roomType(ChatRoom.RoomType.PUBLIC)
+                .build();
+
+        return chatRoomRepository.save(chatRoom);
+    }
+
+    public List<ChatRoomDTO> getAllPublicRooms() {
+        List<ChatRoom> rooms = chatRoomRepository.findByRoomType(ChatRoom.RoomType.PUBLIC);
+        return rooms.stream()
+                .map(ChatRoomDTO::new)
+                .toList();
+    }
+
+    public ChatRoomDTO getChatRoomById(final Long roomId) {
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("Chat room not found with ID: " + roomId));
+        return new ChatRoomDTO(room);
+    }
+
+    private ChatMessageDTO convertToDTO(Message message) {
+        ChatMessageDTO dto = new ChatMessageDTO();
+        dto.setId(message.getId());
+        dto.setSenderUsername(message.getSender().getUsername());
+        dto.setSenderId(message.getSender().getId());
+        dto.setChatRoomId(message.getChatRoom().getId());
+        dto.setContent(message.getContent());
+        dto.setType(ChatMessageDTO.MessageType.CHAT);
+        dto.setTimestamp(message.getTimestamp());
+        dto.setEdited(message.isEdited());
+        dto.setReadByCount(message.getReadByUserIds().size());
+        return dto;
+    }
+}

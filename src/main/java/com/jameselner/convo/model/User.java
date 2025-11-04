@@ -2,6 +2,7 @@ package com.jameselner.convo.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import java.util.Set;
 @Entity
 @Table(name = "user")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
@@ -33,6 +35,13 @@ public class User {
     private UserStatus status = UserStatus.OFFLINE;
 
     private LocalDateTime lastSeen;
+
+
+    /* Potential profile fields
+    private String avatarUrl;
+    private String firstName;
+    private String lastName;
+    */
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
