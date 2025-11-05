@@ -1,4 +1,3 @@
-HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -31,3 +30,23 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Angular/Node frontend
+# Dependencies and tool caches
+frontend/node_modules/*
+frontend/.eslintcache
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/lerna-debug.log*
+
+# Angular CLI build outputs and caches
+frontend/dist/
+frontend/out-tsc/
+frontend/coverage/
+frontend/.angular/
+frontend/.angular/cache/
+
+# TypeScript incremental build info
+frontend/*.tsbuildinfo
