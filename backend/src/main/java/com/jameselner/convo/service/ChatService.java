@@ -109,7 +109,7 @@ public class ChatService {
         dto.setType(ChatMessageDTO.MessageType.CHAT);
         dto.setTimestamp(message.getTimestamp());
         dto.setEdited(message.isEdited());
-        dto.setReadByCount(message.getReadByUserIds().size());
+        dto.setReadByCount(message.getReadByUserIds() != null ? message.getReadByUserIds().size() : 0);
         return dto;
     }
 }
