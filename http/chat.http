@@ -1,0 +1,66 @@
+### @name createRoom
+POST {{baseUrl}}/api/chat/room
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "{{roomName}}",
+  "description": "{{roomDescription}}"
+}
+
+> {%
+    // Capture created room id for subsequent requests
+    client.test("createRoom returns 2xx and id", function() {
+        client.assert([200,201].includes(response.status), "Expected 200/201");
+        const json = response.body;
+        client.assert(json && json.id, "Expected room id");
+        client.global.set("roomId", String(json.id));
+    });
+%}
+
+### @name listRooms
+GET {{baseUrl}}/api/chat/rooms
+Accept: application/json
+Authorization: Bearer {{token}}
+
+> {% client.test("listRooms returns 200 JSON", function() {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### @name getRoom
+GET {{baseUrl}}/api/chat/room/{{roomId}}
+Accept: application/json
+Authorization: Bearer {{token}}
+
+> {% client.test("getRoom returns 200 JSON", function() {
+        client.assert(response.status === 200, "Expected 200");
+    }); %}
+
+### @name listMessages
+GET {{baseUrl}}/api/chat/room/{{roomId}}/messages?page={{page}}&size={{size}}
+Accept: application/json
+Authorization: Bearer {{token}}
+
+> {% client.test("listMessages returns 200 JSON", function() {
+        client.assert(response.status === 200, "Expected 200");
+    }); %}
+
+### @name searchMessages
+GET {{baseUrl}}/api/chat/room/{{roomId}}/search?keyword={{keyword}}
+Accept: application/json
+Authorization: Bearer {{token}}
+
+> {% client.test("searchMessages returns 200 JSON", function() {
+        client.assert(response.status === 200, "Expected 200");
+    }); %}
+
+### @name markAsRead
+POST {{baseUrl}}/api/chat/messages/{{messageId}}/read
+Accept: application/json
+Authorization: Bearer {{token}}
+
+> {% client.test("markAsRead returns 2xx", function() {
+        client.assert(response.status >= 200 && response.status < 300, "Expected 2xx");
+    }); %}
