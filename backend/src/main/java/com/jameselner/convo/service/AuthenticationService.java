@@ -1,6 +1,5 @@
 package com.jameselner.convo.service;
 
-
 import com.jameselner.convo.dto.authentication.AuthenticationRequest;
 import com.jameselner.convo.dto.authentication.AuthenticationResponse;
 import com.jameselner.convo.dto.authentication.RegisterRequest;
