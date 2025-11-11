@@ -1,4 +1,4 @@
-import {Inject, Injectable, PLATFORM_ID} from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
@@ -10,7 +10,6 @@ import {
     RegisterRequest
 } from '../models/user.model';
 import { environment } from '../../../environments/environment';
-import {isPlatformBrowser} from "@angular/common";
 
 @Injectable({
     providedIn: 'root'
@@ -25,18 +24,11 @@ export class AuthService {
     private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
     public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
-    private readonly isBrowser: boolean;
-
     constructor(
         private http: HttpClient,
         private router: Router,
-        @Inject(PLATFORM_ID) private platformId: Object
     ) {
-        this.isBrowser = isPlatformBrowser(this.platformId);
-
-        if (this.isBrowser) {
-            this.checkToken();
-        }
+        this.checkToken();
     }
 
     register(request: RegisterRequest): Observable<AuthenticationResponse> {
@@ -47,9 +39,6 @@ export class AuthService {
     }
 
     login(request: AuthenticationRequest): Observable<AuthenticationResponse> {
-        console.log('Logging in');
-        console.log(request);
-        console.log(this.API_URL)
         return this.http.post<AuthenticationResponse>(`${this.API_URL}/login`, request)
             .pipe(
                 tap(response => this.handleAuthentication(response))
@@ -105,9 +94,7 @@ export class AuthService {
     }
 
     getCurrentUsername(): string | null {
-        console.log('Getting username');
         const token = this.getToken();
-        console.log(token);
 
         if (!token) {
             return null;
