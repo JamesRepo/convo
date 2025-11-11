@@ -20,7 +20,22 @@
                             formControlName="password"
                             autocomplete="current-password"
                     />
-                        @if (loginForm.get('password')!.hasError('required')) {
+                    <button
+                            mat-icon-button
+                            matSuffix
+                            (click)="hidePassword = !hidePassword"
+                            [attr.aria-label]="'Hide password'"
+                            [attr.aria-pressed]="hidePassword"
+                            type="button"
+                    >
+                        @if (hidePassword) {
+                            <mat-icon>visibility_off</mat-icon>
+                        } @else {
+                            <mat-icon>visibility</mat-icon>
+                        }
+                    </button>
+
+                    @if (loginForm.get('password')!.hasError('required')) {
                             <mat-error>Password is required</mat-error>
                         } @else if (loginForm.get('password')!.hasError('minlength')) {
                             <mat-error>Password must be at least 6 characters</mat-error>

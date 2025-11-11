@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../../core/services/auth.service';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
     selector: 'app-login',
@@ -22,7 +23,8 @@ import { AuthService } from '../../../core/services/auth.service';
         MatInputModule,
         MatButtonModule,
         MatProgressSpinnerModule,
-        MatSnackBarModule
+        MatSnackBarModule,
+        MatIconModule
     ],
     templateUrl: './login.component.html',
     styleUrls: ['./login.component.scss']
@@ -50,15 +52,23 @@ export class LoginComponent {
 
             this.authService.login(this.loginForm.value).subscribe({
                 next: () => {
-                    console.log('login')
                     this.snackBar.open('Login successful!', 'Close', { duration: 3000 });
+                    this.loginForm.reset();
                     this.router.navigate(['/chat']);
                 },
                 error: (error) => {
                     this.loading = false;
-                    this.snackBar.open('Login failed. Please check your credentials.', 'Close', {
-                        duration: 5000
-                    });
+                    let message = 'Login failed. Please try again.';
+
+                    if (error.error?.message) {
+                        message = error.error.message;
+                    } else if (error.status === 401) {
+                        message = 'Invalid username or password.';
+                    } else if (error.status === 0) {
+                        message = 'Unable to connect to server. Please check your connection.';
+                    }
+
+                    this.snackBar.open(message, 'Close', { duration: 5000 });
                 }
             });
         }
