@@ -1,0 +1,33 @@
+<div class="message-list" #scrollContainer>
+    @for (message of messages; track message.id) {
+        <div class="message-wrapper"
+             [class.own-message]="isOwnMessage(message)"
+             [class.system-message]="message.type === MessageType.JOIN || message.type === MessageType.LEAVE">
+
+            <!-- System messages -->
+            @if (message.type === MessageType.JOIN || message.type === MessageType.LEAVE) {
+                <div class="system-message-content">
+                    {{ message.content }}
+                </div>
+            }
+
+            <!-- Regular chat messages -->
+            @if (message.type === MessageType.CHAT) {
+                <mat-card class="message-card">
+                    <mat-card-header>
+                        <div class="message-header">
+                            <span class="username">{{ message.senderUsername }}</span>
+                            <span class="timestamp">{{ message.timestamp | date:'short' }}</span>
+                        </div>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <p class="message-content">{{ message.content }}</p>
+                        @if (message.edited) {
+                            <span class="edited-indicator">(edited)</span>
+                        }
+                    </mat-card-content>
+                </mat-card>
+            }
+        </div>
+    }
+</div>
