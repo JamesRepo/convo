@@ -1,0 +1,37 @@
+<h2 mat-dialog-title>{{ title }}</h2>
+
+<mat-dialog-content>
+    <form [formGroup]="roomForm" class="room-form">
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Room Name</mat-label>
+            <input matInput formControlName="name" placeholder="Enter room name" required>
+            <mat-icon matPrefix>chat</mat-icon>
+            @if (roomForm.get('name')!.hasError('required') && roomForm.get('name')?.touched) {
+                <mat-error>Room name is required</mat-error>
+            }
+            @if (roomForm.get('name')!.hasError('minlength') && roomForm.get('name')?.touched) {
+                <mat-error>Room name must be at least 3 characters</mat-error>
+            }
+            @if (roomForm.get('name')!.hasError('maxlength') && roomForm.get('name')?.touched) {
+                <mat-error>Room name must be less than 100 characters</mat-error>
+            }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description (Optional)</mat-label>
+            <textarea matInput formControlName="description" placeholder="Enter room description" rows="3"></textarea>
+            <mat-icon matPrefix>description</mat-icon>
+            @if (roomForm.get('description')!.hasError('maxlength') && roomForm.get('description')?.touched) {
+                <mat-error>Description must be less than 500 characters</mat-error>
+            }
+        </mat-form-field>
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!roomForm.valid">
+        {{ submitButtonText }}
+    </button>
+</mat-dialog-actions>
+
