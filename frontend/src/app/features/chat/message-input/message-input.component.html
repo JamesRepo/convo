@@ -1,0 +1,23 @@
+<div class="message-input-container">
+    <mat-form-field appearance="outline" class="message-field">
+        <mat-label>Type a message...</mat-label>
+        <textarea
+                matInput
+                [(ngModel)]="messageText"
+                (input)="onTyping()"
+                (keypress)="onKeyPress($event)"
+                rows="2"
+                placeholder="Type your message here..."
+        ></textarea>
+    </mat-form-field>
+
+    <button
+            mat-fab
+            color="primary"
+            (click)="sendMessage()"
+            [disabled]="!messageText.trim()"
+            class="send-button"
+    >
+        <mat-icon>send</mat-icon>
+    </button>
+</div>
