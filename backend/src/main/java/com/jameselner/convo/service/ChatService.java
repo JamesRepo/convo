@@ -72,7 +72,7 @@ public class ChatService {
     }
 
     @Transactional
-    public ChatRoom createChatRoom(final String name, final String description, final String username) {
+    public ChatRoomDTO createChatRoom(final String name, final String description, final String username) {
         User creator = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
@@ -83,7 +83,28 @@ public class ChatService {
                 .roomType(ChatRoom.RoomType.PUBLIC)
                 .build();
 
-        return chatRoomRepository.save(chatRoom);
+        ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
+        return new ChatRoomDTO(savedRoom);
+    }
+
+    @Transactional
+    public ChatRoomDTO updateChatRoom(final Long roomId, final String name, final String description) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("Chat room not found with ID: " + roomId));
+
+        chatRoom.setName(name);
+        chatRoom.setDescription(description);
+
+        ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
+        return new ChatRoomDTO(savedRoom);
+    }
+
+    @Transactional
+    public void deleteChatRoom(final Long roomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("Chat room not found with ID: " + roomId));
+        
+        chatRoomRepository.delete(chatRoom);
     }
 
     public List<ChatRoomDTO> getAllPublicRooms() {
