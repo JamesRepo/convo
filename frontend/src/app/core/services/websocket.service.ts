@@ -14,6 +14,7 @@ export class WebSocketService {
     private messageSubject = new BehaviorSubject<ChatMessage | null>(null);
     private typingSubject = new BehaviorSubject<ChatMessage | null>(null);
     private connectionSubject = new BehaviorSubject<boolean>(false);
+    private currentRoomId: number | null = null;
 
     public message$ = this.messageSubject.asObservable().pipe(
         filter(msg => msg !== null)
@@ -70,12 +71,18 @@ export class WebSocketService {
     }
 
     disconnect(): void {
+        if (this.currentRoomId !== null) {
+            this.unsubscribeFromRoom(this.currentRoomId);
+        }
+
         if (this.stompClient) {
             this.subscriptions.forEach(sub => sub.unsubscribe());
             this.subscriptions.clear();
             this.stompClient.deactivate();
             this.connectionSubject.next(false);
         }
+
+        this.currentRoomId = null;
     }
 
     subscribeToRoom(roomId: number): void {
@@ -84,13 +91,12 @@ export class WebSocketService {
             return;
         }
 
+        if (this.currentRoomId !== null && this.currentRoomId !== roomId) {
+            this.unsubscribeFromRoom(this.currentRoomId);
+        }
+
         const messageDestination = `/topic/room/${roomId}`;
         const typingDestination = `/topic/typing/${roomId}`;
-
-        // Unsubscribe from previous room if exists
-        if (this.subscriptions.has(`message-${roomId}`) || this.subscriptions.has(`typing-${roomId}`)) {
-            this.unsubscribeFromRoom(roomId);
-        }
 
         // Subscribe to messages
         const messageSub = this.stompClient.subscribe(
@@ -115,24 +121,34 @@ export class WebSocketService {
 
         // Send join message
         this.sendJoinMessage(roomId);
+        this.currentRoomId = roomId;
     }
 
     unsubscribeFromRoom(roomId: number): void {
         const messageSub = this.subscriptions.get(`message-${roomId}`);
         const typingSub = this.subscriptions.get(`typing-${roomId}`);
+        let hadSubscription = false;
 
         if (messageSub) {
             messageSub.unsubscribe();
             this.subscriptions.delete(`message-${roomId}`);
+            hadSubscription = true;
         }
 
         if (typingSub) {
             typingSub.unsubscribe();
             this.subscriptions.delete(`typing-${roomId}`);
+            hadSubscription = true;
         }
 
-        // Send leave message
-        this.sendLeaveMessage(roomId);
+        if (hadSubscription) {
+            // Send leave message
+            this.sendLeaveMessage(roomId);
+        }
+
+        if (this.currentRoomId === roomId) {
+            this.currentRoomId = null;
+        }
     }
 
     sendMessage(roomId: number, content: string): void {
