@@ -2,7 +2,6 @@ package com.jameselner.convo.controller;
 
 import com.jameselner.convo.dto.ChatMessageDTO;
 import com.jameselner.convo.dto.ChatRoomDTO;
-import com.jameselner.convo.model.ChatRoom;
 import com.jameselner.convo.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,16 +21,35 @@ public class ChatController {
     private final ChatService chatService;
 
     @PostMapping("/room")
-    public ResponseEntity<ChatRoom> createChatRoom(
+    public ResponseEntity<ChatRoomDTO> createChatRoom(
             @RequestBody final Map<String, String> request,
             final Authentication authentication
     ) {
-        ChatRoom room = chatService.createChatRoom(
+        ChatRoomDTO room = chatService.createChatRoom(
                 request.get("name"),
                 request.get("description"),
                 authentication.getName()
         );
         return ResponseEntity.ok(room);
+    }
+
+    @PutMapping("/room/{roomId}")
+    public ResponseEntity<ChatRoomDTO> updateChatRoom(
+            @PathVariable final Long roomId,
+            @RequestBody final Map<String, String> request
+    ) {
+        ChatRoomDTO room = chatService.updateChatRoom(
+                roomId,
+                request.get("name"),
+                request.get("description")
+        );
+        return ResponseEntity.ok(room);
+    }
+
+    @DeleteMapping("/room/{roomId}")
+    public ResponseEntity<Void> deleteChatRoom(@PathVariable final Long roomId) {
+        chatService.deleteChatRoom(roomId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/rooms")
