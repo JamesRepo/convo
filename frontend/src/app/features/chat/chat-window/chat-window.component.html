@@ -1,0 +1,39 @@
+<div class="chat-window">
+    @if (currentRoom) {
+        <mat-toolbar color="primary">
+            <span>{{ currentRoom.name }}</span>
+            <span class="spacer"></span>
+            @if (currentRoom.description) {
+                <span class="room-description">{{ currentRoom.description }}</span>
+            }
+        </mat-toolbar>
+    } @else {
+        <div class="empty-state">
+            <mat-icon>chat_bubble_outline</mat-icon>
+            <h2>Select a chat room to start messaging</h2>
+        </div>
+    }
+
+    @if (currentRoom) {
+        <div class="chat-content">
+            @if (loading) {
+                <div class="loading-container">
+                    <mat-spinner></mat-spinner>
+                </div>
+            } @else {
+                <app-message-list [messages]="messages"></app-message-list>
+            }
+
+            @if (typingMessage) {
+                <div class="typing-indicator">
+                    <span class="typing-text">{{ typingMessage }}</span>
+                </div>
+            }
+
+            <app-message-input
+                    (messageSent)="sendMessage($event)"
+                    (typing)="onTyping()">
+            </app-message-input>
+        </div>
+    }
+</div>
