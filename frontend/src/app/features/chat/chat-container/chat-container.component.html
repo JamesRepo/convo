@@ -1,0 +1,21 @@
+<div class="chat-container">
+    <mat-toolbar color="primary" class="app-toolbar">
+        <span>Convo</span>
+        <span class="spacer"></span>
+        <span class="username">{{ currentUsername }}</span>
+        <button mat-icon-button (click)="logout()">
+            <mat-icon>logout</mat-icon>
+        </button>
+    </mat-toolbar>
+
+    <mat-sidenav-container class="chat-sidenav-container">
+        <mat-sidenav mode="side" opened class="chat-sidenav">
+            <app-chat-room-list (roomSelected)="onRoomSelected($event)">
+            </app-chat-room-list>
+        </mat-sidenav>
+
+        <mat-sidenav-content>
+            <app-chat-window></app-chat-window>
+        </mat-sidenav-content>
+    </mat-sidenav-container>
+</div>

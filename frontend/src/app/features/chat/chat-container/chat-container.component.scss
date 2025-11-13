@@ -1,0 +1,28 @@
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.app-toolbar {
+  flex-shrink: 0;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.username {
+  margin-right: 16px;
+  font-weight: 500;
+}
+
+.chat-sidenav-container {
+  flex: 1;
+  min-height: 0;
+}
+
+.chat-sidenav {
+  width: 300px;
+  border-right: 1px solid #e0e0e0;
+}
