@@ -1,0 +1,38 @@
+<div class="chat-room-list">
+    <div class="header">
+        <h2>Chat Rooms</h2>
+        <button mat-icon-button (click)="createRoom()">
+            <mat-icon>add</mat-icon>
+        </button>
+    </div>
+
+    <mat-nav-list>
+        @for (room of chatRooms$ | async; track room.id) {
+            <mat-list-item
+                    [class.selected]="selectedRoom?.id === room.id"
+                    (click)="selectRoom(room)"
+            >
+                <div class="room-content">
+                    <div matListItemTitle class="room-name">{{ room.name }}</div>
+                    <div class="room-actions">
+                        <button
+                                mat-icon-button
+                                (click)="editRoom(room, $event)"
+                                aria-label="Edit room"
+                        >
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button
+                                mat-icon-button
+                                (click)="deleteRoom(room, $event)"
+                                aria-label="Delete room"
+                                color="warn"
+                        >
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div>
+                </div>
+            </mat-list-item>
+        }
+    </mat-nav-list>
+</div>

@@ -1,0 +1,71 @@
+.chat-room-list {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+  }
+}
+
+mat-nav-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+mat-list-item {
+  cursor: pointer;
+  transition: background-color 0.2s;
+  height: auto !important;
+  min-height: 64px;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+
+  &.selected {
+    background-color: #e3f2fd;
+  }
+
+  ::ng-deep .mdc-list-item__content {
+    overflow: visible;
+    align-items: flex-start !important;
+  }
+
+  ::ng-deep .mdc-list-item__primary-text {
+    width: 100%;
+  }
+
+  .room-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .room-name {
+    flex: 0 0 auto;
+    line-height: 1.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .room-actions {
+    display: flex;
+    gap: 0;
+    margin-top: 2px;
+    align-items: center;
+    flex: 0 0 auto;
+  }
+}
