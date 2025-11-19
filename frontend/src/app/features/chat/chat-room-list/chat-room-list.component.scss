@@ -2,6 +2,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  background: #1b2b6e;
 }
 
 .header {
@@ -10,6 +11,7 @@
   align-items: center;
   padding: 16px;
   border-bottom: 1px solid #e0e0e0;
+  color: white;
 
   h2 {
     margin: 0;
@@ -29,11 +31,11 @@ mat-list-item {
   min-height: 64px;
 
   &:hover {
-    background-color: #f5f5f5;
+    background-color: #22398f;
   }
 
   &.selected {
-    background-color: #e3f2fd;
+    background-color: #22398f;
   }
 
   ::ng-deep .mdc-list-item__content {
@@ -59,6 +61,7 @@ mat-list-item {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: white;
   }
 
   .room-actions {

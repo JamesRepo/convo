@@ -1,7 +1,7 @@
 <div class="chat-window">
     @if (currentRoom) {
-        <mat-toolbar color="primary">
-            <span>{{ currentRoom.name }}</span>
+        <mat-toolbar>
+            <span class="room-name">{{ currentRoom.name }}</span>
             <span class="spacer"></span>
             @if (currentRoom.description) {
                 <span class="room-description">{{ currentRoom.description }}</span>
