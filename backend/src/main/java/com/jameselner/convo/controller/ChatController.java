@@ -2,12 +2,15 @@ package com.jameselner.convo.controller;
 
 import com.jameselner.convo.dto.ChatMessageDTO;
 import com.jameselner.convo.dto.ChatRoomDTO;
+import com.jameselner.convo.model.Message;
 import com.jameselner.convo.service.ChatService;
+import com.jameselner.convo.service.OracleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.List;
 import java.util.Map;
@@ -19,6 +22,8 @@ import java.util.Map;
 public class ChatController {
 
     private final ChatService chatService;
+    private final OracleService oracleService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/room")
     public ResponseEntity<ChatRoomDTO> createChatRoom(
@@ -81,6 +86,14 @@ public class ChatController {
     ) {
         List<ChatMessageDTO> messages = chatService.searchMessages(roomId, keyword);
         return ResponseEntity.ok(messages);
+    }
+
+    @PostMapping("/room/{roomId}/oracle/ask")
+    public ResponseEntity<ChatMessageDTO> askOracle(@PathVariable final Long roomId) {
+        Message oracleMessage = oracleService.askOracle(roomId);
+        ChatMessageDTO oracleDto = chatService.convertToDTO(oracleMessage);
+        messagingTemplate.convertAndSend("/topic/room/" + roomId, oracleDto);
+        return ResponseEntity.ok(oracleDto);
     }
 
     @PostMapping("/messages/{messageId}/read")

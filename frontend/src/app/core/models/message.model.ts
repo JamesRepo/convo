@@ -16,5 +16,7 @@ export enum MessageType {
     JOIN = 'JOIN',
     LEAVE = 'LEAVE',
     TYPING = 'TYPING',
-    STOP_TYPING = 'STOP_TYPING'
+    STOP_TYPING = 'STOP_TYPING',
+    ORACLE = 'ORACLE',
+    SYSTEM = 'SYSTEM'
 }

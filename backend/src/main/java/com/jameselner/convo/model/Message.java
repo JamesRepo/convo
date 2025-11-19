@@ -57,7 +57,8 @@ public class Message {
         VIDEO,
         FILE,
         SYSTEM,
-        TYPING_INDICATOR
+        TYPING_INDICATOR,
+        ORACLE
     }
 
 }

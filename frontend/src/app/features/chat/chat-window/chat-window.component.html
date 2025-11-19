@@ -6,6 +6,16 @@
             @if (currentRoom.description) {
                 <span class="room-description">{{ currentRoom.description }}</span>
             }
+            <button
+                    mat-stroked-button
+                    color="accent"
+                    class="oracle-button"
+                    (click)="askOracle()"
+                    [disabled]="askingOracle"
+            >
+                <mat-icon>auto_awesome</mat-icon>
+                Ask the Oracle
+            </button>
         </mat-toolbar>
     } @else {
         <div class="empty-state">
