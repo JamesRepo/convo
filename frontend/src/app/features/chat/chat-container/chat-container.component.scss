@@ -6,6 +6,7 @@
 
 .app-toolbar {
   flex-shrink: 0;
+  --mat-toolbar-container-background-color: #131c34 !important;
 }
 
 .spacer {
@@ -25,4 +26,8 @@
 .chat-sidenav {
   width: 300px;
   border-right: 1px solid #e0e0e0;
+}
+
+.corner-logo {
+  max-width: 200px;
 }
