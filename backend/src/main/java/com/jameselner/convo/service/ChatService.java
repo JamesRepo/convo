@@ -29,6 +29,15 @@ public class ChatService {
 
     @Transactional
     public Message saveMessage(final String username, final Long chatRoomId, final String content) {
+        return saveMessage(username, chatRoomId, content, Message.MessageType.TEXT);
+    }
+
+    public Message saveMessage(
+            final String username,
+            final Long chatRoomId,
+            final String content,
+            final Message.MessageType messageType
+    ) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
@@ -40,7 +49,7 @@ public class ChatService {
                 .chatRoom(chatRoom)
                 .content(content)
                 .timestamp(LocalDateTime.now())
-                .type(Message.MessageType.TEXT)
+                .type(messageType)
                 .build();
 
         return messageRepository.save(message);
@@ -120,17 +129,30 @@ public class ChatService {
         return new ChatRoomDTO(room);
     }
 
-    private ChatMessageDTO convertToDTO(final Message message) {
+    public ChatMessageDTO convertToDTO(final Message message) {
         ChatMessageDTO dto = new ChatMessageDTO();
         dto.setId(message.getId());
         dto.setSenderUsername(message.getSender().getUsername());
         dto.setSenderId(message.getSender().getId());
         dto.setChatRoomId(message.getChatRoom().getId());
         dto.setContent(message.getContent());
-        dto.setType(ChatMessageDTO.MessageType.CHAT);
+        dto.setType(mapMessageType(message.getType()));
         dto.setTimestamp(message.getTimestamp());
         dto.setEdited(message.isEdited());
         dto.setReadByCount(message.getReadByUserIds() != null ? message.getReadByUserIds().size() : 0);
         return dto;
+    }
+
+    private ChatMessageDTO.MessageType mapMessageType(final Message.MessageType messageType) {
+        if (messageType == null) {
+            return ChatMessageDTO.MessageType.CHAT;
+        }
+
+        return switch (messageType) {
+            case TYPING_INDICATOR -> ChatMessageDTO.MessageType.TYPING;
+            case SYSTEM -> ChatMessageDTO.MessageType.SYSTEM;
+            case ORACLE -> ChatMessageDTO.MessageType.ORACLE;
+            default -> ChatMessageDTO.MessageType.CHAT;
+        };
     }
 }

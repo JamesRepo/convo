@@ -23,6 +23,6 @@ public class ChatMessageDTO {
     private int readByCount;
 
     public enum MessageType {
-        CHAT, JOIN, LEAVE, TYPING, STOP_TYPING
+        CHAT, JOIN, LEAVE, TYPING, STOP_TYPING, ORACLE, SYSTEM
     }
 }

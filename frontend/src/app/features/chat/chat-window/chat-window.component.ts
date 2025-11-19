@@ -34,6 +34,7 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     loading = false;
     typingUsers: Set<string> = new Set();
     typingMessage = '';
+    askingOracle = false;
 
     private destroy$ = new Subject<void>();
     private typingTimeouts = new Map<string, any>();
@@ -135,6 +136,29 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
         if (message.chatRoomId === this.currentRoom?.id) {
             this.chatService.addMessage(message);
         }
+    }
+
+    askOracle(): void {
+        if (!this.currentRoom || this.askingOracle) {
+            return;
+        }
+
+        this.askingOracle = true;
+        this.chatService.askOracle(this.currentRoom.id).subscribe({
+            next: (message) => {
+                // In case the WebSocket is delayed, ensure the message is added locally once.
+                message.timestamp = new Date(message.timestamp);
+                const exists = this.messages.some(m => m.id === message.id);
+                if (!exists && message.chatRoomId === this.currentRoom?.id) {
+                    this.chatService.addMessage(message);
+                }
+                this.askingOracle = false;
+            },
+            error: (error) => {
+                console.error('Error asking the Oracle:', error);
+                this.askingOracle = false;
+            }
+        });
     }
 
     private handleTypingIndicator(message: ChatMessage): void {

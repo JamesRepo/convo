@@ -48,7 +48,7 @@ public class ChatWebSocketController {
         );
 
         // Convert to DTO and broadcast
-        return convertToDTO(savedMessage);
+        return chatService.convertToDTO(savedMessage);
     }
 
     /**
@@ -115,18 +115,5 @@ public class ChatWebSocketController {
      */
     public void broadcastUserStatus(final UserStatusDTO statusDTO) {
         messagingTemplate.convertAndSend("/topic/user-status", statusDTO);
-    }
-
-    private ChatMessageDTO convertToDTO(final Message message) {
-        return ChatMessageDTO.builder()
-                .id(message.getId())
-                .chatRoomId(message.getChatRoom().getId())
-                .senderId(message.getSender().getId())
-                .senderUsername(message.getSender().getUsername())
-                .content(message.getContent())
-                .timestamp(message.getTimestamp())
-                .type(ChatMessageDTO.MessageType.CHAT)
-                .edited(message.isEdited())
-                .build();
     }
 }

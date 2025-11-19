@@ -1,13 +1,14 @@
 import { Component, Input, OnChanges, SimpleChanges, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { ChatMessage, MessageType } from '../../../core/models/message.model';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
     selector: 'app-message-list',
     standalone: true,
-    imports: [CommonModule, MatCardModule],
+    imports: [CommonModule, MatCardModule, MatIconModule],
     templateUrl: './message-list.component.html',
     styleUrls: ['./message-list.component.scss']
 })
