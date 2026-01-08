@@ -3,12 +3,16 @@ package com.jameselner.convo.service;
 import com.jameselner.convo.dto.authentication.AuthenticationRequest;
 import com.jameselner.convo.dto.authentication.AuthenticationResponse;
 import com.jameselner.convo.dto.authentication.RegisterRequest;
+import com.jameselner.convo.exception.AuthenticationFailedException;
+import com.jameselner.convo.exception.DuplicateResourceException;
+import com.jameselner.convo.exception.ResourceNotFoundException;
 import com.jameselner.convo.model.User;
 import com.jameselner.convo.repository.UserRepository;
 import com.jameselner.convo.security.CustomUserDetailsService;
 import com.jameselner.convo.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,11 +32,11 @@ public class AuthService {
     @Transactional
     public AuthenticationResponse register(final RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
+            throw new DuplicateResourceException("User", "username", request.getUsername());
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new DuplicateResourceException("User", "email", request.getEmail());
         }
 
         User user = User.builder()
@@ -57,15 +61,19 @@ public class AuthService {
     }
 
     public AuthenticationResponse authenticate(final AuthenticationRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
+        } catch (BadCredentialsException e) {
+            throw new AuthenticationFailedException();
+        }
 
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found: " + request.getUsername()));
+                .orElseThrow(() -> new ResourceNotFoundException("User", request.getUsername()));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
         String token = jwtUtil.generateToken(userDetails);

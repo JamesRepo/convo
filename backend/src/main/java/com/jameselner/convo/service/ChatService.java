@@ -2,6 +2,7 @@ package com.jameselner.convo.service;
 
 import com.jameselner.convo.dto.ChatMessageDTO;
 import com.jameselner.convo.dto.ChatRoomDTO;
+import com.jameselner.convo.exception.ResourceNotFoundException;
 import com.jameselner.convo.model.ChatRoom;
 import com.jameselner.convo.model.Message;
 import com.jameselner.convo.model.User;
@@ -39,10 +40,10 @@ public class ChatService {
             final Message.MessageType messageType
     ) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("User", username));
 
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new RuntimeException("Chat room not found with ID: " + chatRoomId));
+                .orElseThrow(() -> new ResourceNotFoundException("ChatRoom", chatRoomId));
 
         Message message = Message.builder()
                 .sender(user)
@@ -72,18 +73,9 @@ public class ChatService {
     }
 
     @Transactional
-    public void markMessageAsRead(final Long messageId, final Long userId) {
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new RuntimeException("Message not found: " + messageId));
-
-        message.getReadByUserIds().add(userId);
-        messageRepository.save(message);
-    }
-
-    @Transactional
     public ChatRoomDTO createChatRoom(final String name, final String description, final String username) {
         User creator = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("User", username));
 
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(name)
@@ -99,7 +91,7 @@ public class ChatService {
     @Transactional
     public ChatRoomDTO updateChatRoom(final Long roomId, final String name, final String description) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Chat room not found with ID: " + roomId));
+                .orElseThrow(() -> new ResourceNotFoundException("ChatRoom", roomId));
 
         chatRoom.setName(name);
         chatRoom.setDescription(description);
@@ -111,8 +103,8 @@ public class ChatService {
     @Transactional
     public void deleteChatRoom(final Long roomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Chat room not found with ID: " + roomId));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("ChatRoom", roomId));
+
         chatRoomRepository.delete(chatRoom);
     }
 
@@ -125,7 +117,7 @@ public class ChatService {
 
     public ChatRoomDTO getChatRoomById(final Long roomId) {
         ChatRoom room = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Chat room not found with ID: " + roomId));
+                .orElseThrow(() -> new ResourceNotFoundException("ChatRoom", roomId));
         return new ChatRoomDTO(room);
     }
 

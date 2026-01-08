@@ -1,6 +1,7 @@
 package com.jameselner.convo.service;
 
 import com.jameselner.convo.dto.ChatMessageDTO;
+import com.jameselner.convo.exception.ResourceNotFoundException;
 import com.jameselner.convo.model.ChatRoom;
 import com.jameselner.convo.model.Message;
 import com.jameselner.convo.model.User;
@@ -33,7 +34,6 @@ public class OracleService {
 
     private static final int MAX_HISTORY = 300;
     private static final int MAX_TOKENS = 40;
-    private static final int DEFAULT_CHAIN_ORDER = 2;
     private static final String ORACLE_USERNAME = "Oracle";
     private static final Pattern TOKEN_PATTERN = Pattern.compile("[\\w']+|[.,!?;:]");
 
@@ -53,7 +53,7 @@ public class OracleService {
     @Transactional
     public OracleResult askOracle(final Long roomId, final int chainOrder) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Chat room not found with ID: " + roomId));
+                .orElseThrow(() -> new ResourceNotFoundException("ChatRoom", roomId));
 
         List<Message> recentMessages = loadRecentMessages(roomId);
         List<String> tokens = tokenizeMessages(recentMessages);
