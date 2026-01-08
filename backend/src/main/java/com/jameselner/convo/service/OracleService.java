@@ -51,11 +51,6 @@ public class OracleService {
     }
 
     @Transactional
-    public OracleResult askOracle(final Long roomId) {
-        return askOracle(roomId, DEFAULT_CHAIN_ORDER);
-    }
-
-    @Transactional
     public OracleResult askOracle(final Long roomId, final int chainOrder) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Chat room not found with ID: " + roomId));
@@ -178,7 +173,7 @@ public class OracleService {
     private String joinTokens(final List<String> tokens) {
         StringBuilder builder = new StringBuilder();
         for (String token : tokens) {
-            if (builder.length() == 0) {
+            if (builder.isEmpty()) {
                 builder.append(capitalize(token));
                 continue;
             }
@@ -190,7 +185,7 @@ public class OracleService {
             }
         }
 
-        if (builder.length() > 0 && !isTerminalToken(tokens.get(tokens.size() - 1))) {
+        if (!builder.isEmpty() && !isTerminalToken(tokens.getLast())) {
             builder.append('.');
         }
 

@@ -2,7 +2,6 @@ package com.jameselner.convo.controller;
 
 import com.jameselner.convo.dto.ChatMessageDTO;
 import com.jameselner.convo.dto.ChatRoomDTO;
-import com.jameselner.convo.model.Message;
 import com.jameselner.convo.service.ChatService;
 import com.jameselner.convo.service.OracleService;
 import lombok.RequiredArgsConstructor;
@@ -98,14 +97,5 @@ public class ChatController {
         oracleDto.setOracleMetadata(result.getMetadata());
         messagingTemplate.convertAndSend("/topic/room/" + roomId, oracleDto);
         return ResponseEntity.ok(oracleDto);
-    }
-
-    @PostMapping("/messages/{messageId}/read")
-    public ResponseEntity<?> markAsRead(
-            @PathVariable final Long messageId,
-            final Authentication authentication
-    ) {
-        // Implement getting user ID from authentication
-        return ResponseEntity.ok().build();
     }
 }
