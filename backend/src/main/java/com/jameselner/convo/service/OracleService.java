@@ -1,11 +1,13 @@
 package com.jameselner.convo.service;
 
+import com.jameselner.convo.dto.ChatMessageDTO;
 import com.jameselner.convo.model.ChatRoom;
 import com.jameselner.convo.model.Message;
 import com.jameselner.convo.model.User;
 import com.jameselner.convo.repository.ChatRoomRepository;
 import com.jameselner.convo.repository.MessageRepository;
 import com.jameselner.convo.repository.UserRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,9 +19,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,6 +33,7 @@ public class OracleService {
 
     private static final int MAX_HISTORY = 300;
     private static final int MAX_TOKENS = 40;
+    private static final int DEFAULT_CHAIN_ORDER = 2;
     private static final String ORACLE_USERNAME = "Oracle";
     private static final Pattern TOKEN_PATTERN = Pattern.compile("[\\w']+|[.,!?;:]");
 
@@ -38,17 +43,32 @@ public class OracleService {
     private final PasswordEncoder passwordEncoder;
     private final Random random = new Random();
 
+    @Getter
+    @RequiredArgsConstructor
+    public static class OracleResult {
+        private final Message message;
+        private final ChatMessageDTO.OracleMetadata metadata;
+    }
+
     @Transactional
-    public Message askOracle(final Long roomId) {
+    public OracleResult askOracle(final Long roomId) {
+        return askOracle(roomId, DEFAULT_CHAIN_ORDER);
+    }
+
+    @Transactional
+    public OracleResult askOracle(final Long roomId, final int chainOrder) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Chat room not found with ID: " + roomId));
 
         List<Message> recentMessages = loadRecentMessages(roomId);
         List<String> tokens = tokenizeMessages(recentMessages);
+        Set<String> uniqueTokens = new HashSet<>(tokens);
+
+        int effectiveOrder = Math.min(chainOrder, Math.max(1, tokens.size() - 1));
 
         String prophecy = tokens.isEmpty()
                 ? "The oracle is silent until more words are spoken."
-                : generateProphecy(tokens);
+                : generateProphecy(tokens, effectiveOrder);
 
         Message oracleMessage = Message.builder()
                 .sender(getOracleUser())
@@ -58,7 +78,15 @@ public class OracleService {
                 .type(Message.MessageType.ORACLE)
                 .build();
 
-        return messageRepository.save(oracleMessage);
+        Message savedMessage = messageRepository.save(oracleMessage);
+
+        ChatMessageDTO.OracleMetadata metadata = ChatMessageDTO.OracleMetadata.builder()
+                .messagesAnalyzed(recentMessages.size())
+                .uniqueTokens(uniqueTokens.size())
+                .chainOrder(effectiveOrder)
+                .build();
+
+        return new OracleResult(savedMessage, metadata);
     }
 
     private List<Message> loadRecentMessages(final Long roomId) {
@@ -83,26 +111,29 @@ public class OracleService {
         return tokens;
     }
 
-    private String generateProphecy(final List<String> tokens) {
-        if (tokens.size() == 1) {
-            return tokens.get(0);
+    private String generateProphecy(final List<String> tokens, final int order) {
+        if (tokens.size() <= order) {
+            return String.join(" ", tokens);
         }
 
-        Map<String, List<String>> transitions = buildTransitions(tokens);
+        Map<String, List<String>> transitions = buildTransitions(tokens, order);
 
-        String current = pickStartingToken(tokens);
-        List<String> generated = new ArrayList<>();
-        generated.add(current);
+        List<String> currentState = pickStartingState(tokens, order);
+        List<String> generated = new ArrayList<>(currentState);
 
-        for (int i = 1; i < MAX_TOKENS; i++) {
-            List<String> nextTokens = transitions.getOrDefault(current, Collections.emptyList());
+        for (int i = 0; i < MAX_TOKENS - order; i++) {
+            String key = buildKey(currentState);
+            List<String> nextTokens = transitions.getOrDefault(key, Collections.emptyList());
             if (nextTokens.isEmpty()) {
                 break;
             }
-            current = nextTokens.get(random.nextInt(nextTokens.size()));
-            generated.add(current);
+            String next = nextTokens.get(random.nextInt(nextTokens.size()));
+            generated.add(next);
 
-            if (isTerminalToken(current)) {
+            currentState = new ArrayList<>(currentState.subList(1, currentState.size()));
+            currentState.add(next);
+
+            if (isTerminalToken(next)) {
                 break;
             }
         }
@@ -110,24 +141,34 @@ public class OracleService {
         return joinTokens(generated);
     }
 
-    private Map<String, List<String>> buildTransitions(final List<String> tokens) {
+    private Map<String, List<String>> buildTransitions(final List<String> tokens, final int order) {
         Map<String, List<String>> transitions = new HashMap<>();
-        for (int i = 0; i < tokens.size() - 1; i++) {
-            String key = tokens.get(i);
-            String next = tokens.get(i + 1);
+        for (int i = 0; i <= tokens.size() - order - 1; i++) {
+            List<String> state = tokens.subList(i, i + order);
+            String key = buildKey(state);
+            String next = tokens.get(i + order);
             transitions.computeIfAbsent(key, k -> new ArrayList<>()).add(next);
         }
         return transitions;
     }
 
-    private String pickStartingToken(final List<String> tokens) {
-        String token = tokens.get(random.nextInt(tokens.size()));
+    private String buildKey(final List<String> state) {
+        return String.join("\u0000", state);
+    }
+
+    private List<String> pickStartingState(final List<String> tokens, final int order) {
+        int maxStart = tokens.size() - order;
+        int startIndex = random.nextInt(maxStart + 1);
+
+        List<String> state = new ArrayList<>(tokens.subList(startIndex, startIndex + order));
+
         int safety = 0;
-        while (isTerminalToken(token) && safety < 5) {
-            token = tokens.get(random.nextInt(tokens.size()));
+        while (safety < 10 && state.stream().anyMatch(this::isTerminalToken)) {
+            startIndex = random.nextInt(maxStart + 1);
+            state = new ArrayList<>(tokens.subList(startIndex, startIndex + order));
             safety++;
         }
-        return token;
+        return state;
     }
 
     private boolean isTerminalToken(final String token) {

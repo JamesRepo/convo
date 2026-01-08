@@ -21,6 +21,17 @@ public class ChatMessageDTO {
     private MessageType type;
     private boolean edited;
     private int readByCount;
+    private OracleMetadata oracleMetadata;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OracleMetadata {
+        private int messagesAnalyzed;
+        private int uniqueTokens;
+        private int chainOrder;
+    }
 
     public enum MessageType {
         CHAT, JOIN, LEAVE, TYPING, STOP_TYPING, ORACLE, SYSTEM

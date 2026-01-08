@@ -118,8 +118,9 @@ export class ChatService {
         return this.http.post<void>(`${this.API_URL}/messages/${messageId}/read`, {});
     }
 
-    askOracle(roomId: number): Observable<ChatMessage> {
-        return this.http.post<ChatMessage>(`${this.API_URL}/room/${roomId}/oracle/ask`, {});
+    askOracle(roomId: number, order: number = 2): Observable<ChatMessage> {
+        const params = new HttpParams().set('order', order.toString());
+        return this.http.post<ChatMessage>(`${this.API_URL}/room/${roomId}/oracle/ask`, {}, { params });
     }
 
     addMessage(message: ChatMessage): void {

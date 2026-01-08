@@ -1,3 +1,9 @@
+export interface OracleMetadata {
+    messagesAnalyzed: number;
+    uniqueTokens: number;
+    chainOrder: number;
+}
+
 export interface ChatMessage {
     id?: number;
     senderUsername: string;
@@ -9,6 +15,7 @@ export interface ChatMessage {
     timestamp: Date;
     edited: boolean;
     readByCount: number;
+    oracleMetadata?: OracleMetadata;
 }
 
 export enum MessageType {

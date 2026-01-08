@@ -21,7 +21,15 @@
                     <div class="oracle-content">
                         <div class="oracle-label">Oracle</div>
                         <div class="oracle-text">{{ message.content }}</div>
-                        <div class="oracle-meta">Forged from recent whispers</div>
+                        <div class="oracle-meta">
+                            @if (message.oracleMetadata) {
+                                Forged from {{ message.oracleMetadata.messagesAnalyzed }} messages
+                                ({{ message.oracleMetadata.uniqueTokens }} unique words,
+                                order-{{ message.oracleMetadata.chainOrder }} chain)
+                            } @else {
+                                Forged from recent whispers
+                            }
+                        </div>
                     </div>
                 </div>
             }

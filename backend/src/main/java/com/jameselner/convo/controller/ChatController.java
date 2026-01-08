@@ -89,9 +89,13 @@ public class ChatController {
     }
 
     @PostMapping("/room/{roomId}/oracle/ask")
-    public ResponseEntity<ChatMessageDTO> askOracle(@PathVariable final Long roomId) {
-        Message oracleMessage = oracleService.askOracle(roomId);
-        ChatMessageDTO oracleDto = chatService.convertToDTO(oracleMessage);
+    public ResponseEntity<ChatMessageDTO> askOracle(
+            @PathVariable final Long roomId,
+            @RequestParam(defaultValue = "2") final int order
+    ) {
+        OracleService.OracleResult result = oracleService.askOracle(roomId, order);
+        ChatMessageDTO oracleDto = chatService.convertToDTO(result.getMessage());
+        oracleDto.setOracleMetadata(result.getMetadata());
         messagingTemplate.convertAndSend("/topic/room/" + roomId, oracleDto);
         return ResponseEntity.ok(oracleDto);
     }
